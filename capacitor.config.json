@@ -1,0 +1,6 @@
+{
+  "appId": "com.evsubsidy.finder",
+  "appName": "EV Subsidy Finder",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

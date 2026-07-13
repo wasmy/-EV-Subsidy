@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VoltCalc — EV Subsidy & TCO Finder</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary":          "#0d7ff2",
+          "eco-green":        "#10b981",
+          "background-dark":  "#0f172a",
+          "background-light": "#f5f7f8",
+          "slate-card":       "rgba(30,41,59,0.7)",
+        },
+        fontFamily: { display: ["Space Grotesk"] },
+        borderRadius: { DEFAULT:"0.5rem", lg:"1rem", xl:"1.5rem", full:"9999px" },
+      },
+    },
+  }
+</script>
+<style>
+  /* ── Glassmorphism card ─────────────────────────────────────────── */
+  .glass-card {
+    background: rgba(30,41,59,0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  /* ── CTA glow ───────────────────────────────────────────────────── */
+  .glow-button { box-shadow: 0 0 20px rgba(13,127,242,0.4); }
+  .glow-green  { box-shadow: 0 0 20px rgba(16,185,129,0.4); }
+
+  /* ── Range-input thumb ──────────────────────────────────────────── */
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none; appearance:none;
+    width:20px; height:20px;
+    background:#0d7ff2; cursor:pointer;
+    border-radius:50%; border:2px solid white;
+  }
+
+  /* ── Screen visibility ──────────────────────────────────────────── */
+  .screen { display:none; }
+  .screen.active { display:block; }
+
+
+
+  /* ── Spinner ────────────────────────────────────────────────────── */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width:40px; height:40px;
+    border:4px solid rgba(255,255,255,0.15);
+    border-top-color:#0d7ff2;
+    border-radius:50%;
+    animation: spin .8s linear infinite;
+  }
+
+  /* ── Native-ad shimmer ──────────────────────────────────────────── */
+  .native-ad-badge {
+    font-size:9px; letter-spacing:.08em;
+    background:rgba(255,193,7,0.2); color:#fbbf24;
+    border:1px solid rgba(251,191,36,0.4);
+    padding:1px 6px; border-radius:4px;
+  }
+
+
+
+  body { min-height: max(884px, 100dvh); }
+
+  /* ── Nav active fill ───────────────────────────────────────────── */
+  .nav-icon-fill { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+
+  /* ── Result number counter animation ───────────────────────────── */
+  @keyframes fadeSlideUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0);    }
+  }
+  .animate-in { animation: fadeSlideUp .45s ease both; }
+</style>
+</head>
+
+<!-- =====================================================================
+     BODY
+     ===================================================================== -->
+<body class="bg-background-dark font-display text-slate-100 min-h-screen pb-28 select-none">
+
+
+<!-- ─────────────────────────────────────────────────────────────────────
+     SHARED HEADER (visible on all screens)
+     ───────────────────────────────────────────────────────────────────── -->
+<header class="flex items-center justify-between px-6 pt-8 pb-4">
+  <div class="flex flex-col">
+    <h1 class="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-eco-green bg-clip-text text-transparent">
+      VoltCalc
+    </h1>
+    <p class="text-xs text-slate-400 uppercase tracking-widest font-medium">Smart EV Savings</p>
+  </div>
+  <div class="w-10 h-10 rounded-full border border-slate-700 flex items-center justify-center bg-slate-800">
+    <span class="material-symbols-outlined text-primary">person</span>
+  </div>
+</header>
+
+
+<!-- =====================================================================
+     SCREEN 1 — INPUT
+     ===================================================================== -->
+<main id="screen-input" class="screen active px-6 space-y-5">
+
+  <!-- Hero image -->
+  <div class="relative w-full h-40 rounded-xl overflow-hidden shadow-2xl">
+    <div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-eco-green/20 z-10"></div>
+    <img alt="EV charging at a futuristic station"
+         class="w-full h-full object-cover"
+         src="https://lh3.googleusercontent.com/aida-public/AB6AXuB28Z_m5o3s6xd4ZzjzJvBTsPiqMd8aefvh4kzYS79LJLIiaOZAEA3WeDKBcmB1AIDU6D6zb9PPJVeQXcM1eSuyqvF7lchbEqiLKfzIANj43f5dOCdzpfkc4Ve4jHS5wc5C4J2HDfdoiRyBQXkL60lIoRsLQwYBg8qzGsuQTYpSFb_3dEHMiPkCa9MF0TJfHIcv7B_eK1ViuMjGUss76qnBbMx8VTV223VSXEnAhWDIcP7q8-eYwNFQxCgUAj0Wf78bDd6wjbJDVFs"/>
+    <div class="absolute bottom-4 left-4 z-20">
+      <span class="bg-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-white">
+        Live Rates
+      </span>
+      <p class="text-white text-lg font-bold mt-1">Ready to switch to Electric?</p>
+    </div>
+  </div>
+
+  <!-- ── Toggle: ICE vs EV ───────────────────────────────────────────── -->
+  <div class="glass-card p-5 rounded-xl">
+    <span class="text-sm font-semibold flex items-center gap-2 mb-4">
+      <span class="material-symbols-outlined text-primary text-lg">compare_arrows</span>
+      Comparison Mode
+    </span>
+    <div class="flex h-12 w-full items-center justify-center rounded-lg bg-slate-900/50 p-1">
+      <label class="flex h-full grow items-center justify-center rounded-lg px-2 cursor-pointer bg-transparent text-slate-400 transition-all" id="tab-ice">
+        <span class="text-sm font-medium">ICE Gasoline</span>
+        <input class="hidden" name="compare_mode" type="radio" value="gasoline"/>
+      </label>
+      <label class="flex h-full grow items-center justify-center rounded-lg px-2 cursor-pointer bg-primary text-white shadow-lg transition-all" id="tab-ev">
+        <span class="text-sm font-medium">EV Comparison</span>
+        <input checked class="hidden" name="compare_mode" type="radio" value="ev"/>
+      </label>
+    </div>
+  </div>
+
+  <!-- ── Daily mileage slider ────────────────────────────────────────── -->
+  <div class="glass-card p-5 rounded-xl">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-sm font-semibold flex items-center gap-2">
+        <span class="material-symbols-outlined text-eco-green text-lg">route</span>
+        Average Daily Mileage
+      </span>
+      <span class="text-primary font-bold text-lg">
+        <span id="mileage-display">85</span>
+        <span class="text-xs text-slate-400 font-normal"> mi</span>
+      </span>
+    </div>
+    <input id="mileage-slider"
+           class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary"
+           max="200" min="1" type="range" value="85"
+           oninput="document.getElementById('mileage-display').textContent = this.value"/>
+    <div class="flex justify-between mt-2 text-[10px] text-slate-500 font-medium">
+      <span>1 MI</span><span>100 MI</span><span>200 MI</span>
+    </div>
+  </div>
+
+  <!-- ── Energy rates ────────────────────────────────────────────────── -->
+  <div class="glass-card p-5 rounded-xl">
+    <span class="text-sm font-semibold flex items-center gap-2 mb-4">
+      <span class="material-symbols-outlined text-yellow-500 text-lg">payments</span>
+      Local Energy Rates
+    </span>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="space-y-1.5">
+        <label class="text-[10px] text-slate-400 uppercase font-bold">Gas (per Gallon)</label>
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+          <input id="gas-price" class="w-full bg-slate-900/40 border border-slate-700 rounded-lg pl-7 pr-3 py-2 text-sm outline-none focus:border-primary" type="number" step="0.01" min="0.5" max="20" value="3.45"/>
+        </div>
+      </div>
+      <div class="space-y-1.5">
+        <label class="text-[10px] text-slate-400 uppercase font-bold">Electricity (per kWh)</label>
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+          <input id="elec-rate" class="w-full bg-slate-900/40 border border-slate-700 rounded-lg pl-7 pr-3 py-2 text-sm outline-none focus:border-eco-green" type="number" step="0.01" min="0.01" max="5" value="0.16"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Vehicle efficiency ──────────────────────────────────────────── -->
+  <div class="glass-card p-5 rounded-xl">
+    <span class="text-sm font-semibold flex items-center gap-2 mb-4">
+      <span class="material-symbols-outlined text-purple-400 text-lg">speed</span>
+      Vehicle Efficiency
+    </span>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="space-y-1.5">
+        <label class="text-[10px] text-slate-400 uppercase font-bold">ICE Fuel Economy (MPG)</label>
+        <input id="gas-mpg" class="w-full bg-slate-900/40 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary" type="number" step="1" min="5" max="200" value="30"/>
+      </div>
+      <div class="space-y-1.5">
+        <label class="text-[10px] text-slate-400 uppercase font-bold">EV Efficiency (mi/kWh)</label>
+        <input id="ev-mpkwh" class="w-full bg-slate-900/40 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-eco-green" type="number" step="0.1" min="1" max="10" value="3.5"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Location / Subsidy region ──────────────────────────────────── -->
+  <div class="glass-card p-5 rounded-xl">
+    <span class="text-sm font-semibold flex items-center gap-2 mb-4">
+      <span class="material-symbols-outlined text-primary text-lg">location_on</span>
+      Subsidy Region
+    </span>
+    <div class="space-y-3">
+      <!-- Country -->
+      <div class="relative">
+        <select id="country-select"
+                onchange="updateRegions()"
+                class="w-full bg-slate-900/40 border border-slate-700 rounded-lg px-3 py-2.5 text-sm appearance-none outline-none focus:border-primary">
+          <option value="us">United States</option>
+          <option value="canada">Canada</option>
+          <option value="australia">Australia</option>
+          <option value="new zealand">New Zealand</option>
+        </select>
+        <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">expand_more</span>
+      </div>
+      <!-- Region (dynamically populated) -->
+      <div class="relative">
+        <select id="region-select"
+                class="w-full bg-slate-900/40 border border-slate-700 rounded-lg px-3 py-2.5 text-sm appearance-none outline-none focus:border-primary">
+        </select>
+        <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">expand_more</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Insurance inputs ────────────────────────────────────────────── -->
+  <div class="glass-card p-5 rounded-xl">
+    <span class="text-sm font-semibold flex items-center gap-2 mb-4">
+      <span class="material-symbols-outlined text-red-400 text-lg">shield_with_heart</span>
+      Insurance Details
+    </span>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="space-y-1.5">
+        <label class="text-[10px] text-slate-400 uppercase font-bold">EV Purchase Price ($)</label>
+        <input id="ev-price" class="w-full bg-slate-900/40 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary" type="number" step="500" min="5000" max="500000" value="42000"/>
+      </div>
+      <div class="space-y-1.5">
+        <label class="text-[10px] text-slate-400 uppercase font-bold">Driver Age</label>
+        <input id="driver-age" class="w-full bg-slate-900/40 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-eco-green" type="number" step="1" min="16" max="100" value="35"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Error banner (hidden by default) ───────────────────────────── -->
+  <div id="input-error" class="hidden bg-red-900/40 border border-red-500/40 text-red-300 text-sm rounded-xl px-4 py-3 flex items-center gap-2">
+    <span class="material-symbols-outlined text-lg">error</span>
+    <span id="input-error-msg">Please check your inputs.</span>
+  </div>
+
+  <!-- ── CTA button ──────────────────────────────────────────────────── -->
+  <button id="cta-btn"
+          onclick="handleCalculate()"
+          class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2 glow-button">
+    Calculate TCO &amp; Find Rebates
+    <span class="material-symbols-outlined">trending_up</span>
+  </button>
+
+</main><!-- /screen-input -->
+
+
+<!-- =====================================================================
+     SCREEN 2 — TCO RESULTS
+     ===================================================================== -->
+<main id="screen-results" class="screen px-6 space-y-5">
+
+  <h2 class="text-xl font-bold pt-2">Your Savings Breakdown</h2>
+
+  <!-- Monthly cost comparison -->
+  <div class="glass-card p-5 rounded-xl animate-in space-y-4">
+    <p class="text-xs text-slate-400 uppercase font-bold tracking-widest">Monthly Fuel Cost</p>
+    <div class="flex items-end justify-between gap-4">
+      <!-- ICE bar -->
+      <div class="flex-1 space-y-2">
+        <div class="flex justify-between text-xs text-slate-400">
+          <span>⛽ Gasoline</span>
+          <span id="r-monthly-gas" class="text-white font-semibold">—</span>
+        </div>
+        <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+          <div id="bar-gas" class="h-full bg-red-500 rounded-full transition-all duration-700" style="width:0%"></div>
+        </div>
+      </div>
+      <!-- EV bar -->
+      <div class="flex-1 space-y-2">
+        <div class="flex justify-between text-xs text-slate-400">
+          <span>⚡ Electric</span>
+          <span id="r-monthly-ev" class="text-white font-semibold">—</span>
+        </div>
+        <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+          <div id="bar-ev" class="h-full bg-eco-green rounded-full transition-all duration-700" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Yearly savings hero -->
+  <div class="rounded-xl bg-gradient-to-br from-primary/30 to-eco-green/20 border border-primary/30 p-6 text-center animate-in" style="animation-delay:.1s">
+    <p class="text-xs text-slate-400 uppercase tracking-widest font-bold mb-2">Annual Savings with EV</p>
+    <p id="r-yearly-savings" class="text-5xl font-bold bg-gradient-to-r from-primary to-eco-green bg-clip-text text-transparent">—</p>
+    <p class="text-slate-400 text-sm mt-1">per year vs. ICE vehicle</p>
+  </div>
+
+  <!-- ── NATIVE AD BANNER ────────────────────────────────────────────── -->
+  <div class="glass-card p-5 rounded-xl animate-in space-y-3 relative overflow-hidden" style="animation-delay:.12s">
+    <div class="absolute top-0 right-0 bg-yellow-500/20 text-yellow-500 text-[9px] font-bold px-2 py-1 rounded-bl-lg uppercase tracking-wider">Ad</div>
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 rounded-full bg-eco-green/20 flex items-center justify-center flex-shrink-0">
+        <span class="material-symbols-outlined text-eco-green text-2xl">bolt</span>
+      </div>
+      <div>
+        <p class="text-sm font-bold">Save More on Your EV Loan</p>
+        <p class="text-xs text-slate-400">Get pre-approved in 2 minutes. Rates from 4.9% APR.</p>
+      </div>
+    </div>
+    <button class="w-full bg-slate-800 text-eco-green hover:bg-slate-700 font-bold py-2 rounded-lg text-sm border border-eco-green/30 transition-all">
+      Check My Rate →
+    </button>
+  </div>
+
+  <!-- Daily cost row -->
+  <div class="glass-card p-5 rounded-xl animate-in grid grid-cols-2 gap-4" style="animation-delay:.15s">
+    <div class="text-center space-y-1">
+      <p class="text-[10px] text-slate-400 uppercase font-bold">Daily Gas Cost</p>
+      <p id="r-daily-gas" class="text-xl font-bold text-red-400">—</p>
+    </div>
+    <div class="text-center space-y-1">
+      <p class="text-[10px] text-slate-400 uppercase font-bold">Daily EV Cost</p>
+      <p id="r-daily-ev" class="text-xl font-bold text-eco-green">—</p>
+    </div>
+  </div>
+
+  <!-- Nav shortcut buttons -->
+  <div class="grid grid-cols-2 gap-3 animate-in" style="animation-delay:.2s">
+    <button onclick="showScreen('screen-subsidies')"
+            class="glass-card rounded-xl p-4 flex flex-col items-center gap-2 border border-primary/30 hover:border-primary transition-all">
+      <span class="material-symbols-outlined text-primary text-2xl">sell</span>
+      <span class="text-xs font-semibold">View Subsidies</span>
+    </button>
+    <button onclick="showScreen('screen-insurance')"
+            class="glass-card rounded-xl p-4 flex flex-col items-center gap-2 border border-eco-green/30 hover:border-eco-green transition-all">
+      <span class="material-symbols-outlined text-eco-green text-2xl">shield_with_heart</span>
+      <span class="text-xs font-semibold">Insurance Quote</span>
+    </button>
+  </div>
+
+  <button onclick="showScreen('screen-input')"
+          class="w-full border border-slate-700 text-slate-400 font-semibold py-3 rounded-xl hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2 animate-in"
+          style="animation-delay:.25s">
+    <span class="material-symbols-outlined text-lg">arrow_back</span>
+    Recalculate
+  </button>
+
+</main><!-- /screen-results -->
+
+
+<!-- =====================================================================
+     SCREEN 3 — SUBSIDIES
+     ===================================================================== -->
+<main id="screen-subsidies" class="screen px-6 space-y-5">
+
+  <div class="flex items-center justify-between pt-2">
+    <h2 class="text-xl font-bold">EV Subsidies</h2>
+    <span id="sub-region-badge"
+          class="text-[10px] font-bold uppercase tracking-wider bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full">
+      —
+    </span>
+  </div>
+
+  <!-- Total value banner -->
+  <div class="rounded-xl bg-gradient-to-br from-eco-green/20 to-primary/10 border border-eco-green/30 p-5 animate-in">
+    <p class="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">Total Potential Savings</p>
+    <p id="sub-total" class="text-4xl font-bold text-eco-green">—</p>
+    <p class="text-xs text-slate-500 mt-1">Sum of all monetary incentives for your region</p>
+  </div>
+
+  <!-- Subsidy cards (dynamic) -->
+  <div id="subsidy-list" class="space-y-3">
+    <!-- Injected by JS -->
+  </div>
+
+  <!-- Empty state -->
+  <div id="sub-empty" class="hidden text-center py-10 space-y-3">
+    <span class="material-symbols-outlined text-4xl text-slate-600">search_off</span>
+    <p class="text-slate-500 text-sm">No subsidies found for this region yet.<br/>Check back as we expand our database.</p>
+  </div>
+
+  <button onclick="showScreen('screen-input')"
+          class="w-full border border-slate-700 text-slate-400 font-semibold py-3 rounded-xl hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2">
+    <span class="material-symbols-outlined text-lg">arrow_back</span>
+    Back to Inputs
+  </button>
+
+</main><!-- /screen-subsidies -->
+
+
+<!-- =====================================================================
+     SCREEN 4 — INSURANCE
+     ===================================================================== -->
+<main id="screen-insurance" class="screen px-6 space-y-5">
+
+  <h2 class="text-xl font-bold pt-2">EV Insurance Estimate</h2>
+
+  <!-- Premium hero -->
+  <div class="rounded-xl bg-gradient-to-br from-red-500/20 to-primary/10 border border-red-500/30 p-6 text-center animate-in">
+    <p class="text-xs text-slate-400 uppercase tracking-widest font-bold mb-2">Estimated Monthly Premium</p>
+    <p id="ins-monthly" class="text-5xl font-bold text-white">—</p>
+    <p id="ins-currency" class="text-slate-400 text-sm mt-1">per month</p>
+  </div>
+
+  <!-- Details row -->
+  <div class="glass-card p-5 rounded-xl animate-in grid grid-cols-3 gap-3 text-center" style="animation-delay:.1s">
+    <div class="space-y-1">
+      <p class="text-[10px] text-slate-400 uppercase font-bold">Annual</p>
+      <p id="ins-annual" class="text-lg font-bold text-white">—</p>
+    </div>
+    <div class="space-y-1">
+      <p class="text-[10px] text-slate-400 uppercase font-bold">Risk Profile</p>
+      <p id="ins-risk" class="text-lg font-bold">—</p>
+    </div>
+    <div class="space-y-1">
+      <p class="text-[10px] text-slate-400 uppercase font-bold">Currency</p>
+      <p id="ins-cur2" class="text-lg font-bold text-slate-300">—</p>
+    </div>
+  </div>
+
+  <!-- Disclaimer -->
+  <div class="glass-card p-4 rounded-xl border border-yellow-500/20 animate-in" style="animation-delay:.15s">
+    <p id="ins-disclaimer" class="text-[11px] text-slate-400 leading-relaxed">—</p>
+  </div>
+
+  <!-- ── NATIVE AD SLOT ─────────────────────────────────────────────────
+       Contextual placement: right below the insurance estimate.
+       The user just saw their ~$150/mo premium — now a real insurer ad
+       appears offering "Get a real quote." This context match drives
+       high CTR and premium CPMs.
+       Replace the mock below with your AdMob Native Ad SDK widget.
+       ─────────────────────────────────────────────────────────────────── -->
+  <div class="glass-card rounded-xl p-4 border border-yellow-500/20 animate-in" style="animation-delay:.2s">
+    <div class="flex items-center justify-between mb-3">
+      <span class="native-ad-badge">Sponsored</span>
+      <span class="text-[10px] text-slate-600">Ad</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="w-14 h-14 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
+        <span class="material-symbols-outlined text-white text-2xl">security</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-bold text-white">GEICO · EV Insurance</p>
+        <p class="text-xs text-slate-400 mt-0.5">Drivers who switched saved an avg of $850/yr.</p>
+        <button class="mt-2 bg-primary text-white text-xs font-bold px-4 py-1.5 rounded-full glow-button">
+          Get a Real Quote →
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- /NATIVE AD SLOT -->
+
+  <button onclick="showScreen('screen-input')"
+          class="w-full border border-slate-700 text-slate-400 font-semibold py-3 rounded-xl hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2">
+    <span class="material-symbols-outlined text-lg">arrow_back</span>
+    Back to Inputs
+  </button>
+
+</main><!-- /screen-insurance -->
+
+
+<!-- =====================================================================
+     BOTTOM NAVIGATION BAR
+     ===================================================================== -->
+<nav class="fixed bottom-0 left-0 right-0 glass-card border-t border-slate-700 px-6 py-3 flex justify-between items-center z-50">
+  <button onclick="showScreen('screen-input')"   class="nav-btn flex flex-col items-center gap-1" data-screen="screen-input">
+    <span class="material-symbols-outlined nav-icon-fill text-primary">dashboard</span>
+    <span class="text-[10px] font-medium text-primary">Input</span>
+  </button>
+  <button onclick="showScreen('screen-results')"  class="nav-btn flex flex-col items-center gap-1 text-slate-500" data-screen="screen-results">
+    <span class="material-symbols-outlined">calculate</span>
+    <span class="text-[10px] font-medium">Calculator</span>
+  </button>
+  <button onclick="showScreen('screen-subsidies')" class="nav-btn flex flex-col items-center gap-1 text-slate-500" data-screen="screen-subsidies">
+    <span class="material-symbols-outlined">sell</span>
+    <span class="text-[10px] font-medium">Subsidies</span>
+  </button>
+  <button onclick="showScreen('screen-insurance')" class="nav-btn flex flex-col items-center gap-1 text-slate-500" data-screen="screen-insurance">
+    <span class="material-symbols-outlined">shield_with_heart</span>
+    <span class="text-[10px] font-medium">Insurance</span>
+  </button>
+  <button onclick="showScreen('screen-settings')"  class="nav-btn flex flex-col items-center gap-1 text-slate-500" data-screen="screen-settings">
+    <span class="material-symbols-outlined">settings</span>
+    <span class="text-[10px] font-medium">Settings</span>
+  </button>
+</nav>
+
+
+<!-- =====================================================================
+     JAVASCRIPT — API integration & navigation logic
+     ===================================================================== -->
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// CONFIG
+// Change API_BASE to your deployed backend URL in production.
+// When running locally: uvicorn main:app --port 8000
+// ─────────────────────────────────────────────────────────────────────────────
+const API_BASE = "http://127.0.0.1:8000";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REGION MAP — keeps country selector in sync with region selector
+// Mirrors the SUBSIDIES dict in main.py exactly.
+// ─────────────────────────────────────────────────────────────────────────────
+const REGIONS = {
+  "us": [
+    { label: "California",   value: "california"        },
+    { label: "Texas",        value: "texas"             },
+    { label: "New York",     value: "new york"          },
+    { label: "Colorado",     value: "colorado"          },
+    { label: "Other State",  value: "other"             },
+  ],
+  "canada": [
+    { label: "British Columbia", value: "british columbia" },
+    { label: "Ontario",          value: "ontario"          },
+    { label: "Quebec",           value: "quebec"           },
+    { label: "Other Province",   value: "other"            },
+  ],
+  "australia": [
+    { label: "New South Wales", value: "new south wales" },
+    { label: "Victoria",        value: "victoria"        },
+    { label: "Queensland",      value: "queensland"      },
+    { label: "Other State",     value: "other"           },
+  ],
+  "new zealand": [
+    { label: "All Regions", value: "all" },
+  ],
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Populate region <select> when country changes
+// ─────────────────────────────────────────────────────────────────────────────
+function updateRegions() {
+  const country  = document.getElementById("country-select").value;
+  const sel      = document.getElementById("region-select");
+  sel.innerHTML  = "";
+  (REGIONS[country] || []).forEach(r => {
+    const o = document.createElement("option");
+    o.value       = r.value;
+    o.textContent = r.label;
+    sel.appendChild(o);
+  });
+}
+updateRegions(); // init on page load
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SCREEN NAVIGATION
+// ─────────────────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+
+  // Update bottom nav active state
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    const active = btn.dataset.screen === id;
+    btn.querySelectorAll("span").forEach(s => {
+      s.className = s.className.replace(/text-primary/g, "").trim();
+      if (active) s.classList.add("text-primary");
+      else s.classList.add("text-slate-500");
+    });
+  });
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPER — format currency
+// ─────────────────────────────────────────────────────────────────────────────
+const fmt = (n, symbol = "$") =>
+  `${symbol}${Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPER — show / hide input error banner
+// ─────────────────────────────────────────────────────────────────────────────
+function setError(msg) {
+  const el = document.getElementById("input-error");
+  const tx = document.getElementById("input-error-msg");
+  if (msg) { tx.textContent = msg; el.classList.remove("hidden"); }
+  else      { el.classList.add("hidden"); }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HANDLE CALCULATE — main orchestrator
+// Fires when user taps "Calculate TCO & Find Rebates"
+// ─────────────────────────────────────────────────────────────────────────────
+async function handleCalculate() {
+  setError(null);
+
+  // Collect inputs
+  const dailyMileage  = parseFloat(document.getElementById("mileage-slider").value);
+  const gasPrice      = parseFloat(document.getElementById("gas-price").value);
+  const gasMPG        = parseFloat(document.getElementById("gas-mpg").value);
+  const elecRate      = parseFloat(document.getElementById("elec-rate").value);
+  const evMPkWh       = parseFloat(document.getElementById("ev-mpkwh").value);
+  const country       = document.getElementById("country-select").value;
+  const region        = document.getElementById("region-select").value;
+  const evPrice       = parseFloat(document.getElementById("ev-price").value);
+  const driverAge     = parseInt(document.getElementById("driver-age").value);
+
+  // Basic client-side validation
+  if ([dailyMileage, gasPrice, gasMPG, elecRate, evMPkWh, evPrice, driverAge].some(v => isNaN(v) || v <= 0)) {
+    setError("Please fill in all fields with valid positive numbers.");
+    return;
+  }
+  if (driverAge < 16 || driverAge > 100) { setError("Driver age must be between 16 and 100."); return; }
+
+  // Disable button during load
+  const btn = document.getElementById("cta-btn");
+  btn.disabled = true;
+  btn.innerHTML = `<div class="spinner"></div>`;
+
+  try {
+    // ── Fire all three API calls in parallel ─────────────────────────
+    const [tcoRes, subRes, insRes] = await Promise.all([
+
+      fetch(`${API_BASE}/api/calculate-tco`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          daily_mileage:          dailyMileage,
+          gas_price_per_gallon:   gasPrice,
+          gas_mpg:                gasMPG,
+          electricity_rate_per_kwh: elecRate,
+          ev_miles_per_kwh:       evMPkWh,
+        }),
+      }),
+
+      fetch(`${API_BASE}/api/subsidies/${encodeURIComponent(country)}/${encodeURIComponent(region)}`),
+
+      fetch(`${API_BASE}/api/estimate-insurance`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          country:           country,
+          ev_purchase_price: evPrice,
+          driver_age:        driverAge,
+        }),
+      }),
+    ]);
+
+    // ── Parse JSON ───────────────────────────────────────────────────
+    if (!tcoRes.ok) throw new Error(`TCO API error ${tcoRes.status}`);
+    if (!subRes.ok) throw new Error(`Subsidy API error ${subRes.status}`);
+    if (!insRes.ok) throw new Error(`Insurance API error ${insRes.status}`);
+
+    const tco = await tcoRes.json();
+    const sub = await subRes.json();
+    const ins = await insRes.json();
+
+    // ── Populate TCO Results screen ──────────────────────────────────
+    renderTCO(tco);
+
+    // ── Populate Subsidies screen ────────────────────────────────────
+    renderSubsidies(sub);
+
+    // ── Populate Insurance screen ────────────────────────────────────
+    renderInsurance(ins);
+
+    // ── Navigate to results ──────────────────────────────────────────
+    showScreen("screen-results");
+
+  } catch (err) {
+    console.error(err);
+    setError(`Could not connect to the backend. Is the server running at ${API_BASE}?`);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `Calculate TCO &amp; Find Rebates <span class="material-symbols-outlined">trending_up</span>`;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER — TCO Results
+// ─────────────────────────────────────────────────────────────────────────────
+function renderTCO(tco) {
+  document.getElementById("r-monthly-gas").textContent = fmt(tco.monthly_gas_cost);
+  document.getElementById("r-monthly-ev").textContent  = fmt(tco.monthly_ev_cost);
+  document.getElementById("r-daily-gas").textContent   = fmt(tco.daily_gas_cost);
+  document.getElementById("r-daily-ev").textContent    = fmt(tco.daily_ev_cost);
+
+  const savings = tco.yearly_savings;
+  const savEl   = document.getElementById("r-yearly-savings");
+  savEl.textContent = (savings >= 0 ? "+" : "-") + fmt(savings);
+  savEl.className   = savings >= 0
+    ? "text-5xl font-bold bg-gradient-to-r from-primary to-eco-green bg-clip-text text-transparent"
+    : "text-5xl font-bold text-red-400";
+
+  // Animate width bars (proportional)
+  const max = Math.max(tco.monthly_gas_cost, tco.monthly_ev_cost, 1);
+  setTimeout(() => {
+    document.getElementById("bar-gas").style.width = `${(tco.monthly_gas_cost / max) * 100}%`;
+    document.getElementById("bar-ev").style.width  = `${(tco.monthly_ev_cost  / max) * 100}%`;
+  }, 80);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER — Subsidies
+// ─────────────────────────────────────────────────────────────────────────────
+const SUBSIDY_TYPE_STYLE = {
+  "tax_credit":              { color: "text-primary",   bg: "bg-primary/15",   icon: "receipt_long"    },
+  "upfront_rebate":          { color: "text-eco-green", bg: "bg-eco-green/15", icon: "sell"            },
+  "stamp_duty_waiver":       { color: "text-yellow-400",bg: "bg-yellow-400/15",icon: "gavel"           },
+  "fringe_benefit_tax_exemption": { color:"text-purple-400", bg:"bg-purple-400/15", icon:"work" },
+  "non_monetary_benefit":    { color: "text-slate-400", bg: "bg-slate-700/40", icon: "star"            },
+};
+
+function renderSubsidies(sub) {
+  const regionLabel = `${sub.country.toUpperCase()} · ${sub.region.replace(/\b\w/g, c => c.toUpperCase())}`;
+  document.getElementById("sub-region-badge").textContent = regionLabel;
+  document.getElementById("sub-total").textContent =
+    sub.total_potential_value > 0
+      ? `$${sub.total_potential_value.toLocaleString()}`
+      : "Non-monetary";
+
+  const list  = document.getElementById("subsidy-list");
+  const empty = document.getElementById("sub-empty");
+  list.innerHTML = "";
+
+  if (!sub.subsidies || sub.subsidies.length === 0) {
+    empty.classList.remove("hidden");
+    return;
+  }
+  empty.classList.add("hidden");
+
+  sub.subsidies.forEach((s, i) => {
+    const style = SUBSIDY_TYPE_STYLE[s.type] || SUBSIDY_TYPE_STYLE["upfront_rebate"];
+    const amountStr = s.amount > 0
+      ? `${s.currency} ${s.amount.toLocaleString()}`
+      : "Non-monetary";
+
+    const el = document.createElement("div");
+    el.className = `glass-card p-4 rounded-xl animate-in border border-white/5`;
+    el.style.animationDelay = `${i * 0.07}s`;
+    el.innerHTML = `
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-lg ${style.bg} flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined ${style.color} text-xl">${style.icon}</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <p class="text-sm font-semibold leading-tight">${s.subsidy_name}</p>
+            <span class="text-base font-bold ${style.color} whitespace-nowrap">${amountStr}</span>
+          </div>
+          <span class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider ${style.color} ${style.bg} px-2 py-0.5 rounded-full">
+            ${s.type.replace(/_/g, " ")}
+          </span>
+          <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">${s.notes}</p>
+        </div>
+      </div>`;
+    list.appendChild(el);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER — Insurance
+// ─────────────────────────────────────────────────────────────────────────────
+function renderInsurance(ins) {
+  document.getElementById("ins-monthly").textContent     = fmt(ins.estimated_monthly_premium);
+  document.getElementById("ins-currency").textContent    = `per month · ${ins.currency}`;
+  document.getElementById("ins-annual").textContent      = fmt(ins.estimated_annual_premium);
+  document.getElementById("ins-cur2").textContent        = ins.currency;
+  document.getElementById("ins-disclaimer").textContent  = ins.disclaimer;
+
+  const riskEl = document.getElementById("ins-risk");
+  riskEl.textContent = ins.risk_profile;
+  riskEl.className = {
+    "Low":    "text-lg font-bold text-eco-green",
+    "Medium": "text-lg font-bold text-yellow-400",
+    "High":   "text-lg font-bold text-red-400",
+  }[ins.risk_profile] || "text-lg font-bold text-white";
+}
+</script>
+
+</body>
+</html>

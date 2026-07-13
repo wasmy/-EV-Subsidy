@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EV Results &amp; Rebate Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d7ff2",
+                        "eco-green": "#10b981",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#101922",
+                        "glass-dark": "rgba(255, 255, 255, 0.05)",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-4 py-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Your Savings Summary</h1>
+<div class="size-10"></div>
+</header>
+<main class="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+<section class="space-y-4">
+<div class="flex justify-between items-end">
+<div>
+<h2 class="text-sm font-medium text-slate-500 dark:text-slate-400">Yearly Cost: Gas vs. EV</h2>
+<p class="text-3xl font-bold text-primary">$2,350 Savings</p>
+</div>
+<span class="text-xs font-semibold px-2 py-1 bg-eco-green/20 text-eco-green rounded-full uppercase tracking-wider">Annualized</span>
+</div>
+<div class="glass-effect rounded-xl p-6 flex items-end justify-around gap-4 h-48">
+<div class="flex flex-col items-center gap-3 w-full max-w-[100px]">
+<div class="w-full bg-slate-300 dark:bg-slate-700 rounded-t-lg relative group h-32">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 text-sm font-bold opacity-60">$3,200</div>
+</div>
+<span class="text-xs font-medium text-slate-500">Gas Engine</span>
+</div>
+<div class="flex flex-col items-center gap-3 w-full max-w-[100px]">
+<div class="w-full bg-eco-green rounded-t-lg relative h-12">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 text-sm font-bold text-eco-green">$850</div>
+<div class="absolute inset-0 bg-white/20 animate-pulse rounded-t-lg"></div>
+</div>
+<span class="text-xs font-medium text-eco-green">Electric</span>
+</div>
+</div>
+</section>
+<section class="space-y-3">
+<div class="flex items-center justify-between">
+<h3 class="text-md font-bold">Eligible Government Rebates</h3>
+<span class="text-xs text-primary font-medium">View All</span>
+</div>
+<div class="space-y-2">
+<div class="glass-effect p-4 rounded-xl flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<div>
+<p class="font-bold text-base">$7,500 Federal Tax Credit</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Clean Vehicle Credit (Form 8936)</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+<div class="glass-effect p-4 rounded-xl flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-lg bg-eco-green/20 flex items-center justify-center text-eco-green">
+<span class="material-symbols-outlined">eco</span>
+</div>
+<div>
+<p class="font-bold text-base">$2,000 State Rebate</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">California Clean Vehicle Project</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+</div>
+</section>
+<section class="space-y-3">
+<h3 class="text-md font-bold">Estimated EV Insurance Premium</h3>
+<div class="bg-primary rounded-xl p-5 text-white flex justify-between items-center relative overflow-hidden">
+<div class="relative z-10">
+<p class="text-primary-100 text-sm opacity-80">Monthly estimated rate</p>
+<div class="flex items-baseline gap-1">
+<span class="text-3xl font-bold">$145</span>
+<span class="text-sm">/mo</span>
+</div>
+</div>
+<div class="relative z-10 bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">
+                    Based on Profile
+                </div>
+<div class="absolute -right-4 -bottom-4 size-24 bg-white/10 rounded-full blur-2xl"></div>
+</div>
+</section>
+<section class="pb-10">
+<div class="glass-effect rounded-xl p-4 border-dashed border-primary/30 relative">
+<span class="absolute top-3 right-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sponsored</span>
+<div class="flex items-center gap-4">
+<div class="size-14 rounded-lg bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
+<img alt="Modern logo" class="rounded-lg object-cover size-full" data-alt="Abstract modern car insurance logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2lL_vdkMxg8vm5s8tQra3YwQmezJOZ2AephCkk-xUw6R4TsY-TBduoNvlgxKXNdky7ihXtTgen4ESY48RVBOmkBTiZxQD8keZoA7ChDulWHp0HaknpRgBzpYvabOxY33DM1dWgYvqBEdlQuH3QisOrwYZ8tagQR35n-g86Dtq96BXbQUrUgX4dsTqBLec8XUMOANxV-mrtlahXNomeTuUuihsbcPmlHLdIrNmGoO5-6kBvUPFJZ5vMLawuHASrbGBROfFgwwYLEA"/>
+</div>
+<div class="flex-1">
+<p class="font-bold text-sm">Switch to BlueShield Auto</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Save up to 15% more on EV policies.</p>
+</div>
+<button class="bg-primary/10 text-primary px-4 py-2 rounded-lg text-xs font-bold hover:bg-primary/20 transition-colors">
+                        Apply
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<nav class="sticky bottom-0 bg-background-light dark:bg-background-dark border-t border-slate-200 dark:border-slate-800 pb-6 pt-2 px-2">
+<div class="flex items-center justify-around max-w-lg mx-auto">
+<a class="flex flex-col items-center gap-1 p-2 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="text-[10px] font-medium">Input</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">calculate</span>
+<span class="text-[10px] font-medium">Calculator</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-[10px] font-medium">Subsidies</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">shield</span>
+<span class="text-[10px] font-medium">Insurance</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-slate-500 dark:text-slate-400" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</a>
+</div>
+</nav>
+</body></html>

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">EV Subsidy Finder</string>
+    <string name="title_activity_main">EV Subsidy Finder</string>
+    <string name="package_name">com.evsubsidy.finder</string>
+    <string name="custom_url_scheme">com.evsubsidy.finder</string>
+</resources>
